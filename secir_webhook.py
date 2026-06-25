@@ -12,8 +12,14 @@ def dashboard():
 @app.route('/seasonaledge', methods=['POST'])
 def webhook():
     global current_state
-    data = request.get_json()
+    # Handle both JSON and form data
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
+    
     if data.get('to_regime') != current_state['regime']:
+        data['received_at'] = datetime.now().isoformat()
         events.append(data)
         current_state = {'regime': data.get('to_regime'), 'secir': data.get('secir')}
         return {'status': 'logged'}, 200
